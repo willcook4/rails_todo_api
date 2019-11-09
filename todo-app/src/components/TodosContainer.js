@@ -1,8 +1,23 @@
 import React from 'react'
 import styled from 'styled-components'
+import axios from 'axios'
 
 let TaskList = styled('ul')`
   padding: 0 25px;
+
+  li {
+    list-style-type: none;
+    font-family: Tahoma, sans-serif;
+    font-size: 1.2em;
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+  }
+
+  li:hover {
+    // visibility: visible;
+    // opacity: 1;
+    color: firebrick;
+  }
 `
 
 let ListWrapper = styled('div')`
@@ -26,6 +41,26 @@ let TaskInput = styled('input')`
 `
 
 class TodosContainer extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      todos: []
+    }
+  }
+
+  getTodos() {
+    // NOTE we can use /api/v1/ here rather than http://localhost:3000/api/v1 due to the proxy in our package.json file
+    axios.get('/api/v1/todos')
+    .then(response => {
+      this.setState({todos: response.data}, () => console.log('STATE: ', this.state))
+    })
+    .catch(error => console.log(error))
+  }
+
+  componentDidMount() {
+    this.getTodos()
+  }
+
   render () {
     return (
       <>
@@ -36,7 +71,15 @@ class TodosContainer extends React.Component {
             maxLength='50' />
         </InputContainer>
         <ListWrapper>
-          <TaskList />
+          <TaskList>
+            {this.state.todos.map(todo => (
+              <li key={todo.id}>
+                <input type='checkbox' />
+                <label>{todo.title}</label>
+                <span>x</span>
+              </li>
+            ))}
+          </TaskList>
         </ListWrapper>
       </>
     )
