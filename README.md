@@ -25,3 +25,15 @@ To run in development locally
 ```bash
   heroku local -f Procfile.dev
 ```
+
+### TODOS
+- Update this readme to reflect common CLI tasks.
+Setup, migrations, clearing db...
+
+- Add Autoprefixer to make ready for more public browsers.
+
+- Refactor the TodosContainer into smaller components
+
+- Change to use uuid's from the todo list rather than db id's
+
+- Refactor to use pure components and react hooks
