@@ -5,8 +5,12 @@ class TodosController < ApplicationController
   end
 
   def create
-    todo = Todo.create(todo_param)
-    render json: todo
+    @todo = Todo.new(todo_param)
+    if @todo.save
+      render json: @todo
+    else
+      render json: {errors: @todo.errors.full_messages}, status: 400
+    end
   end
 
   def update
