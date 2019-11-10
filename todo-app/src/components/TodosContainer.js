@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import axios from 'axios'
+import update from 'immutability-helper'
 
 let TaskList = styled('ul')`
   padding: 0 25px;
@@ -79,7 +80,7 @@ let TaskInput = styled('input')`
   box-sizing: border-box;
 
   ::placeholder {
-    color: red;
+    /* color: red; */
     font-size: 1.1em;
   }
 `
@@ -88,10 +89,12 @@ class TodosContainer extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      todos: []
+      todos: [],
+      inputValue: ''
     }
   }
 
+  // Get all the todos from the backend
   getTodos() {
     // NOTE we can use /api/v1/ here rather than http://localhost:3000/api/v1 due to the proxy in our package.json file
     axios.get('/api/v1/todos')
@@ -99,6 +102,41 @@ class TodosContainer extends React.Component {
       this.setState({todos: response.data}, () => console.log('STATE: ', this.state))
     })
     .catch(error => console.log(error))
+  }
+
+  // Send the input value text to the api post create 
+  createTodo = (e) => {
+    if(e.key === 'Enter'){
+      axios.post('/api/v1/todos', { todo: {title: e.target.value } })
+      .then(resp => {
+        const todos = update(this.state.todos, {
+          $splice: [[0, 0, resp.data]]
+        })
+        this.setState({
+          todos: todos,
+          inputValue: ''
+        })
+      })
+      .catch(error => console.log(error))
+    }
+  }
+
+  // reset the add a todo value
+  handleChange = (e) => {
+    this.setState({ inputValue: e.target.value })
+  }
+
+  // Mark a todo as done
+  updateTodo = (e, id) => {
+    axios.put(`/api/v1/todos/${id}`, { todo: { done: e.target.checked } })
+    .then(resp => {
+      const todoIndex = this.state.todos.findIndex(x => x.id === resp.data.id)
+      const todos = update(this.state.todos, { [todoIndex]: { $set: resp.data } } )
+      this.setState({
+        todos: todos
+      })
+    })
+    .catch(err => console.log(err))
   }
 
   componentDidMount() {
@@ -112,13 +150,20 @@ class TodosContainer extends React.Component {
           <TaskInput
             type='text'
             placeholder='Add a task'
-            maxLength='50' />
+            maxLength='50'
+            onKeyPress={this.createTodo}
+            value={this.state.inputValue}
+            onChange={this.handleChange}
+          />
         </InputContainer>
         <ListWrapper>
           <TaskList>
             {this.state.todos.map(todo => (
               <li key={todo.id}>
-                <input type='checkbox' />
+                <input type='checkbox'
+                       checked={todo.done}
+                       onChange={(e) => this.updateTodo(e, todo.id)}
+                />
                 <label>{todo.title}</label>
                 <span>x</span>
               </li>

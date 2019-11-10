@@ -9,3 +9,5 @@
 # Todo.create(title: "", done: false)
 Todo.create(title: "Buy food: milk, bread, fruit", done: false)
 Todo.create(title: "Buy The Upbeats tickets", done: false)
+
+print "Finished Seeding Todos"

@@ -11,6 +11,7 @@ class TodosController < ApplicationController
 
   def update
     todo = Todo.find(params[:id])
+    # TODO change the update_attributes to update as it is deprecated
     todo.update_attributes(todo_param)
     render json: todo
   end
