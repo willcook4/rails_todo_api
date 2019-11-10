@@ -1,6 +1,5 @@
 import React from 'react'
 import styled from 'styled-components'
-// import './App.css'
 import TodosContainer from './components/TodosContainer'
 
 let Container = styled('div')`

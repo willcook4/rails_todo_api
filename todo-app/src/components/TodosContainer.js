@@ -4,19 +4,58 @@ import axios from 'axios'
 
 let TaskList = styled('ul')`
   padding: 0 25px;
-
+  
   li {
     list-style-type: none;
     font-family: Tahoma, sans-serif;
     font-size: 1.2em;
     padding: 10px 0;
     border-bottom: 1px solid #ccc;
+
+    input[type=checkbox] {
+      position: relative;
+      float: left;
+      margin-right: 10px;
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+      margin-left: 5px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    input[type=checkbox] + label {
+      color: black;
+    }
+    input[type=checkbox]:checked + label {
+      text-decoration: line-through;
+      color: #656565;
+    }
+
+    span {
+      float: right;
+      color: red;
+      background: rgba(0,0,0,0);
+      font-size: 20px;
+      font-weight: bold;
+      border: 1px solid white;
+      border-radius: 50%;
+      padding: 10px 5px;
+      visibility: hidden;
+      opacity: 0;
+      line-height: 0;
+      margin-right: 5px;
+      cursor: default;
+    }
   }
 
-  li:hover {
-    // visibility: visible;
-    // opacity: 1;
-    color: firebrick;
+  li:hover span {
+    color: red;
+    visibility: visible;
+    opacity: 1;
   }
 `
 
@@ -38,6 +77,11 @@ let TaskInput = styled('input')`
   width: 100%;
   border-radius: 25px;
   box-sizing: border-box;
+
+  ::placeholder {
+    color: red;
+    font-size: 1.1em;
+  }
 `
 
 class TodosContainer extends React.Component {
