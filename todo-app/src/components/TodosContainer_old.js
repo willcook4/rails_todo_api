@@ -2,7 +2,6 @@ import React from 'react'
 import styled from 'styled-components'
 import axios from 'axios'
 import update from 'immutability-helper'
-import AddTodo from './AddTodo'
 
 let TaskList = styled('ul')`
   padding: 0 25px;
@@ -70,6 +69,22 @@ let ListWrapper = styled('div')`
   overflow: auto;
 `
 
+let InputContainer = styled('div')`
+  padding: 15px;
+`
+
+let TaskInput = styled('input')`
+  padding: 10px;
+  width: 100%;
+  border-radius: 25px;
+  box-sizing: border-box;
+
+  ::placeholder {
+    /* color: red; */
+    font-size: 1.1em;
+  }
+`
+
 class TodosContainer extends React.Component {
   constructor(props) {
     super(props)
@@ -113,18 +128,15 @@ class TodosContainer extends React.Component {
 
   // Mark a todo as done
   updateTodo = (e, id) => {
-    // todo connect to Api.js
-    axios.post('/api/v1/todos', { todo: {title: e.target.value } })
+    axios.put(`/api/v1/todos/${id}`, { todo: { done: e.target.checked } })
     .then(resp => {
-      const todos = update(this.state.todos, {
-        $splice: [[0, 0, resp.data]]
-      })
+      const todoIndex = this.state.todos.findIndex(x => x.id === resp.data.id)
+      const todos = update(this.state.todos, { [todoIndex]: { $set: resp.data } } )
       this.setState({
-        todos: todos,
-        inputValue: ''
+        todos: todos
       })
     })
-    .catch(error => console.log(error))
+    .catch(err => console.log(err))
   }
 
   componentDidMount() {
@@ -134,7 +146,16 @@ class TodosContainer extends React.Component {
   render () {
     return (
       <>
-        <AddTodo />
+        <InputContainer>
+          <TaskInput
+            type='text'
+            placeholder='Add a task'
+            maxLength='50'
+            onKeyPress={this.createTodo}
+            value={this.state.inputValue}
+            onChange={this.handleChange}
+          />
+        </InputContainer>
         <ListWrapper>
           <TaskList>
             {this.state.todos.map(todo => (
