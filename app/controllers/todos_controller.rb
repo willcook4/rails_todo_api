@@ -9,7 +9,7 @@ class TodosController < ApplicationController
     if @todo.save
       render json: @todo
     else
-      render json: {errors: @todo.errors.full_messages}, status: 400
+      render json: {errors: @todo.errors }, status: 400
     end
   end
 
@@ -21,9 +21,19 @@ class TodosController < ApplicationController
   end
 
   def destroy
+    # todo make this non-destructive to data
     todo = Todo.find(params[:id])
     todo.destroy
     head :no_content, status: :ok
+  end
+
+  def show
+    @todo = Todo.find(params[:id])
+    if @todo
+      render json: @todo
+    else
+      render json: {errors: 'todo not found' }, status: 400
+    end
   end
 
   private
