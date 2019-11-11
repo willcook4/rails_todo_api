@@ -1,157 +1,60 @@
-import React from 'react'
-import styled from 'styled-components'
-import axios from 'axios'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios' 
 import update from 'immutability-helper'
 import AddTodo from './AddTodo'
+import TaskList from './TaskList'
+import Errors from './Errors'
 
-let TaskList = styled('ul')`
-  padding: 0 25px;
-  
-  li {
-    list-style-type: none;
-    font-family: Tahoma, sans-serif;
-    font-size: 1.2em;
-    padding: 10px 0;
-    border-bottom: 1px solid #ccc;
+// note due to the proxy in the package.json this doesn't need to be https://www.....
+const BASE_URL = '/api/v1/todos'
 
-    input[type=checkbox] {
-      position: relative;
-      float: left;
-      margin-right: 10px;
-      width: 20px;
-      height: 20px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      outline: none;
-      margin-left: 5px;
-      text-align: center;
-      cursor: pointer;
-      font-weight: bold;
-    }
+const TodosContainer = () => {
+  const [todos, setTodos] = useState([])
+  const [error, setError] = useState('')
 
-    input[type=checkbox] + label {
-      color: black;
-    }
-    input[type=checkbox]:checked + label {
-      text-decoration: line-through;
-      color: #656565;
-    }
+  useEffect(
+    () => {
+      (async() => {
+        const response = await axios.get(BASE_URL)
+        setTodos(response.data)
+        })()
+      },
+      [todos.length]
+  )
 
-    span {
-      float: right;
-      color: red;
-      background: rgba(0,0,0,0);
-      font-size: 20px;
-      font-weight: bold;
-      border: 1px solid white;
-      border-radius: 50%;
-      padding: 10px 5px;
-      visibility: hidden;
-      opacity: 0;
-      line-height: 0;
-      margin-right: 5px;
-      cursor: default;
-    }
-  }
+   // Send the input value text to the api create 
+  let createTodo = async(e) => {
+    if(e.key === 'Enter') {
+      if(e.target.value.length < 5) {
+        setError('Todo is too short, try a longer description')
+        return
+      }
 
-  li:hover span {
-    color: red;
-    visibility: visible;
-    opacity: 1;
-  }
-`
-
-let ListWrapper = styled('div')`
-  position: absolute;
-  bottom: 50px;
-  top: 160px;
-  right: 0;
-  left: 0;
-  overflow: auto;
-`
-
-class TodosContainer extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      todos: [],
-      inputValue: ''
-    }
-  }
-
-  // Get all the todos from the backend
-  getTodos() {
-    // NOTE we can use /api/v1/ here rather than http://localhost:3000/api/v1 due to the proxy in our package.json file
-    axios.get('/api/v1/todos')
-    .then(response => {
-      this.setState({todos: response.data}, () => console.log('STATE: ', this.state))
-    })
-    .catch(error => console.log(error))
-  }
-
-  // Send the input value text to the api post create 
-  createTodo = (e) => {
-    if(e.key === 'Enter'){
-      axios.post('/api/v1/todos', { todo: {title: e.target.value } })
-      .then(resp => {
-        const todos = update(this.state.todos, {
+      axios.post(BASE_URL, { todo: { title: e.target.value } }).then(resp => {
+        const updatedTodos = update(todos, {
           $splice: [[0, 0, resp.data]]
         })
-        this.setState({
-          todos: todos,
-          inputValue: ''
-        })
+        setTodos(updatedTodos)
       })
-      .catch(error => console.log(error))
+      .catch(e => console.log('api error: ', e))
     }
   }
 
-  // reset the add a todo value
-  handleChange = (e) => {
-    this.setState({ inputValue: e.target.value })
+  // Mark a todo as done/not done
+  let updateTodo = async(e, id) => {
+    let resp = await axios.put(`${BASE_URL}/${id}`, { todo: { done: e.target.checked } })
+    const todoIndex = todos.findIndex(x => x.id === resp.data.id)
+    const updatedTodos = update(todos, { [todoIndex]: { $set: resp.data } } )
+    setTodos(updatedTodos)
   }
 
-  // Mark a todo as done
-  updateTodo = (e, id) => {
-    // todo connect to Api.js
-    axios.post('/api/v1/todos', { todo: {title: e.target.value } })
-    .then(resp => {
-      const todos = update(this.state.todos, {
-        $splice: [[0, 0, resp.data]]
-      })
-      this.setState({
-        todos: todos,
-        inputValue: ''
-      })
-    })
-    .catch(error => console.log(error))
-  }
-
-  componentDidMount() {
-    this.getTodos()
-  }
-
-  render () {
-    return (
-      <>
-        <AddTodo />
-        <ListWrapper>
-          <TaskList>
-            {this.state.todos.map(todo => (
-              <li key={todo.id}>
-                <input type='checkbox'
-                       checked={todo.done}
-                       onChange={(e) => this.updateTodo(e, todo.id)}
-                />
-                <label>{todo.title}</label>
-                <span>x</span>
-              </li>
-            ))}
-          </TaskList>
-        </ListWrapper>
-      </>
-    )
-  }
+  return (
+    <>
+      <Errors errors={error} />
+      <AddTodo createTodo={createTodo} setError={setError} />
+      <TaskList todos={todos} updateTodo={updateTodo} />
+    </>
+  )
 }
 
 export default TodosContainer

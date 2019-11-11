@@ -1,8 +1,5 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-// import axios from 'axios'
-// import update from 'immutability-helper'
-import Api from '../lib/Api'
 
 let InputContainer = styled('div')`
   padding: 15px;
@@ -15,12 +12,11 @@ let TaskInput = styled('input')`
   box-sizing: border-box;
 
   ::placeholder {
-    /* color: red; */
     font-size: 1.1em;
   }
 `
 
-const AddTodo = () => {
+const AddTodo = ({createTodo, setError}) => {
   const [inputValue, setValue] = useState('')
 
   return (
@@ -29,19 +25,11 @@ const AddTodo = () => {
         type='text'
         placeholder='Add a task'
         maxLength='50'
-        onKeyPress={async(e) => {
+        onKeyPress={(e) => {
+          setError('')
           if (e.key === 'Enter') {
-            let resp = await Api.createATodo(e.target.value)
-            
-            //   .then(resp => {
-            //     const todos = update(this.state.todos, {
-            //       $splice: [[0, 0, resp.data]]
-            //     })
-            //     this.setState({
-            //       todos: todos,
-            //     })
-            setValue('')
-            //   .catch(error => console.log(error))
+            createTodo(e)
+            setValue('') // clear the input box
           }
         }}
         value={inputValue}

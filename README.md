@@ -30,10 +30,10 @@ To run in development locally
 - Update this readme to reflect common CLI tasks.
 Setup, migrations, clearing db...
 
-- Add Autoprefixer to make ready for more public browsers.
+- Add Autoprefixer to make ready for more public browsers. -- will need to eject from create react app
 
-- Refactor the TodosContainer into smaller components
+- Refactor the TodosContainer into smaller components -- partly done
 
 - Change to use uuid's from the todo list rather than db id's
 
-- Refactor to use pure components and react hooks
+- Refactor to use pure components and react hooks -- done
