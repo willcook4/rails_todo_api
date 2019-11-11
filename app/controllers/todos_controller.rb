@@ -21,13 +21,14 @@ class TodosController < ApplicationController
   end
 
   def destroy
-    # todo make this non-destructive to data
+    # todo make this non-destructive to data, e.g is_active? ==> false
     todo = Todo.find(params[:id])
     todo.destroy
     head :no_content, status: :ok
   end
 
   def show
+    # convert to uuid over id
     @todo = Todo.find(params[:id])
     if @todo
       render json: @todo
